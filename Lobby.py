@@ -14,6 +14,8 @@ class Lobby :
     intervalo = 0.05
     tempo = time.time()
     digitar = False
+    linhasProntas = []
+    antigaLinha = 0
     
     def __init__(self) :
         self.god = God.God(self.grafico.largura/2 - 150, self.grafico.altura/2 - 165, 300, 330)
@@ -41,28 +43,28 @@ class Lobby :
         self.mensagem = self.god.responder(pergunta)
         self.tamanho_mensagem = len(self.mensagem)
         self.cont_mensagem = 0
-    
-    def atualizar_resposta(self) : 
-        cont = self.cont_mensagem
-        mensagem = self.mensagem
-        tamanho = self.tamanho_mensagem
+        self.linhasProntas = []
+        self.antigaLinha = 0
         
-        t_atual = time.time()
-        if cont < tamanho and  t_atual - self.tempo >= self.intervalo:
-            self.cont_mensagem += 1
-            
-            if cont % 100 == 0 :
-                i = cont
-                while mensagem[i] != ' ' and i < tamanho :
-                    i += 1
-                self.mensagem = self.mensagem[0:self.cont_mensagem] + "*" + self.mensagem[i:tamanho]
-                
-            self.tempo = t_atual
-
+    def atualizar_resposta(self) : 
+        tempo_atual = time.time()
+        
+        for it in self.linhasProntas :
+            self.grafico.drawTexto(it, self.linhasProntas[it])
          
-        texto = self.grafico.fonte.render(self.mensagem[0:self.cont_mensagem], True, Grafico.WHITE)
-        posicao = texto.get_rect(center=(self.grafico.largura/2, self.grafico.altura - 100))
-        self.grafico.drawTexto(texto, posicao)
+        if tempo_atual - self.tempo >= self.intervalo and self.cont_mensagem < self.tamanho_mensagem:
+            self.cont_mensagem += 1;
+            if self.cont_mensagem+1 % 100 == 0 :
+                while self.mensagem[self.cont_mensagem] != ' ' :
+                    self.cont_mensagem += 1;
+                texto = self.grafico.fonte.render(self.mensagem[self.antigaLinha :self.cont_mensagem], True, Grafico.WHITE)
+                posicao = texto.get_rect(center=(self.grafico.largura/2, self.grafico.altura - 100 + len(self.linhasProntas)*10))
+                self.linhasProntas = map(texto, posicao)
+                self.antigaLinha = self.cont_mensagem
+            
+        linhaNaoTerminada = self.grafico.fonte.render(self.mensagem[self.antigaLinha:self.cont_mensagem], True, Grafico.WHITE)
+        posicaoNaoTerminada = texto.get_rect(center=(self.grafico.largura/2, self.grafico.altura - 100))
+        self.grafico.drawTexto(linhaNaoTerminada, posicaoNaoTerminada)
         
     def exibir_texto(self) :
         texto = self.grafico.fonte.render(self.texto_digitado, True, Grafico.WHITE)
